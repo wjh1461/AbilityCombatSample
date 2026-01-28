@@ -18,13 +18,15 @@ public:
 	UCombatComponent();
 	
 protected:
-	TObjectPtr<UAbilitySystemComponent> ASC;
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
+	virtual void InitializeComponent() override;
+	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

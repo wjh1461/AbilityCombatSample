@@ -2,7 +2,6 @@
 
 
 #include "CombatCore/CombatComponent.h"
-
 #include "AbilitySystemComponent.h"
 
 // Sets default values for this component's properties
@@ -10,7 +9,7 @@ UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	ASC = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 }
 
 
@@ -20,6 +19,14 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+	
+}
+
+void UCombatComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	
+	AbilitySystemComponent->InitAbilityActorInfo(GetOwner(), GetOwner());
 	
 }
 
@@ -34,6 +41,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 UAbilitySystemComponent* UCombatComponent::GetAbilitySystemComponent() const
 {
-	return ASC;
+	return AbilitySystemComponent;
 }
 
