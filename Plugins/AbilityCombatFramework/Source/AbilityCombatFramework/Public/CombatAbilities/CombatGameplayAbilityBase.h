@@ -14,4 +14,6 @@ class ABILITYCOMBATFRAMEWORK_API UCombatGameplayAbilityBase : public UGameplayAb
 {
 	GENERATED_BODY()
 	
+public:
+	
 };

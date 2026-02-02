@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Attributes/CombatAttributeSet.h"
+#include "CombatAttributes/CombatAttributeSet.h"
 
 UCombatAttributeSet::UCombatAttributeSet()
 {
