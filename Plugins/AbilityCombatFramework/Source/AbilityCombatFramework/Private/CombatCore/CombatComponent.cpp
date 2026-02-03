@@ -4,11 +4,14 @@
 #include "CombatCore/CombatComponent.h"
 #include "AbilitySystemComponent.h"
 #include "CombatLog.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "CombatAbilities/CombatGameplayAbilityBase.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	
 }
 
@@ -17,9 +20,9 @@ UCombatComponent::UCombatComponent()
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 	
+	const APlayerController* PlayerController = Cast<APlayerController>(GetOwner()->GetInstigatorController());
+	InitializePlayerInput(PlayerController->InputComponent);
 }
 
 void UCombatComponent::InitializeComponent()
@@ -39,7 +42,10 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	//TODO: 입력 처리는 일단 틱에서 관리 
+	// 틱 관련 문제가 생길 경우 FTickFunction을 상속받아 해결
+	bool bGamePaused = false; 
+	ProcessAbilityInput(DeltaTime, bGamePaused);
 }
 
 UAbilitySystemComponent* UCombatComponent::GetAbilitySystemComponent() const
@@ -60,7 +66,34 @@ void UCombatComponent::RegisterCombatAbilities()
 
 void UCombatComponent::HandleCombatIntent()
 {
-	//TODO: 전투 입력 해석 후 어빌리티 실행
+	//TODO: 전투 입력 해석 후 어빌리티 실행 
+}
+
+void UCombatComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
+{
+	check(PlayerInputComponent);
+	
+	const APawn* Pawn = Cast<APawn>(GetOwner());
+	if (!Pawn)
+	{
+		return;
+	}
+	
+	const APlayerController* PC = Cast<APlayerController>(GetOwner()->GetInstigatorController());
+	check(PC);
+	
+	const ULocalPlayer* LP = Cast<ULocalPlayer>(PC->GetLocalPlayer());
+	check(LP);
+	
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+	
+	UEnhancedInputComponent* CombatIC = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	if (CombatIC)
+	{
+		//TODO: InputAction - InputGameplayTag 바인딩
+		//CombatIC->BindAction()
+	}
 }
 
 void UCombatComponent::AbilityInputTagPressed(const FGameplayTag CombatInputTag)
@@ -99,8 +132,11 @@ void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGa
 {
 	//TODO: InputPressedSpecHandles, InputReleasedSpecHandles, InputHeldSpecHandles 처리
 	// 기존 플레이어 입력 시스템과 충돌하지 않아야 함.
+	// 입력이 Blocked 되었을 경우 처리
+	
 	
 	UE_LOG(LogCombat, Log, TEXT("ProcessAbilityInput Tick 처리"));
+	
 	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
 	AbilitiesToActivate.Reset();
 
@@ -111,7 +147,12 @@ void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGa
 		{
 			if (AbilitySpec->Ability && !AbilitySpec->IsActive())
 			{
-				//TODO: 
+				const UCombatGameplayAbilityBase* CombatAbilityCDO = Cast<UCombatGameplayAbilityBase>(AbilitySpec->Ability);
+				if (CombatAbilityCDO && 
+					CombatAbilityCDO->GetActivationPolicy() == ECombatAbilityActivationPolicy::WhileInputActive)
+				{
+					AbilitiesToActivate.AddUnique(SpecHandle);
+				}
 			}
 		}
 	}
@@ -126,11 +167,16 @@ void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGa
 				AbilitySpec->InputPressed = true;
 				if (AbilitySpec->IsActive())
 				{
-					//AbilitySpecInputPressed(*AbilitySpec);	
+					AbilitySystemComponent->AbilitySpecInputPressed(*AbilitySpec);	
 				}
 				else
 				{
-					//TODO: 
+					const UCombatGameplayAbilityBase* CombatAbilityCDO = Cast<UCombatGameplayAbilityBase>(AbilitySpec->Ability);
+					if (CombatAbilityCDO && 
+						CombatAbilityCDO->GetActivationPolicy() == ECombatAbilityActivationPolicy::OnInputTriggered)
+					{
+						AbilitiesToActivate.AddUnique(SpecHandle);
+					}
 				}
 			}
 		}
@@ -152,7 +198,7 @@ void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGa
 				AbilitySpec->InputPressed = false;
 				if (AbilitySpec->IsActive())
 				{
-					//AbilitySpecInputReleased(*AbilitySpec);
+					AbilitySystemComponent->AbilitySpecInputReleased(*AbilitySpec);
 				}
 			}
 		}
