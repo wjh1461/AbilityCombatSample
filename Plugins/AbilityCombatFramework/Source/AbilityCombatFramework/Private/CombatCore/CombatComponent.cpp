@@ -55,7 +55,7 @@ UAbilitySystemComponent* UCombatComponent::GetAbilitySystemComponent() const
 
 void UCombatComponent::RegisterCombatAbilities()
 {
-	
+	//
 }
 
 void UCombatComponent::HandleCombatIntent()
@@ -63,11 +63,102 @@ void UCombatComponent::HandleCombatIntent()
 	//TODO: 전투 입력 해석 후 어빌리티 실행
 }
 
-bool UCombatComponent::TryCombatAbility(FGameplayTag CombatGameplayTag)
+void UCombatComponent::AbilityInputTagPressed(const FGameplayTag CombatInputTag)
 {
-	//TODO: 등록된 태그와 일치하는 어빌리티 실행 시도
+	if (CombatInputTag.IsValid() && AbilitySystemComponent)
+	{
+		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
+		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
+		{
+			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))
+			{
+				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
+				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
+			}
+		}
+	}
+}
+
+void UCombatComponent::AbilityInputTagReleased(const FGameplayTag CombatInputTag)
+{
+	if (CombatInputTag.IsValid())
+	{
+		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
+		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
+		{
+			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))
+			{
+				InputReleasedSpecHandles.AddUnique(AbilitySpec.Handle);
+				InputHeldSpecHandles.Remove(AbilitySpec.Handle);
+			}
+		}
+	}
+}
+
+void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGamePaused)
+{
+	//TODO: InputPressedSpecHandles, InputReleasedSpecHandles, InputHeldSpecHandles 처리
+	// 기존 플레이어 입력 시스템과 충돌하지 않아야 함.
 	
+	UE_LOG(LogCombat, Log, TEXT("ProcessAbilityInput Tick 처리"));
+	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
+	AbilitiesToActivate.Reset();
+
+	// Input Held
+	for (const FGameplayAbilitySpecHandle& SpecHandle : InputHeldSpecHandles)
+	{
+		if (const FGameplayAbilitySpec* AbilitySpec = AbilitySystemComponent->FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (AbilitySpec->Ability && !AbilitySpec->IsActive())
+			{
+				//TODO: 
+			}
+		}
+	}
 	
-	return true;
+	// Input Pressed
+	for (const FGameplayAbilitySpecHandle& SpecHandle : InputPressedSpecHandles)
+	{
+		if (FGameplayAbilitySpec* AbilitySpec = AbilitySystemComponent->FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (AbilitySpec->Ability)
+			{
+				AbilitySpec->InputPressed = true;
+				if (AbilitySpec->IsActive())
+				{
+					//AbilitySpecInputPressed(*AbilitySpec);	
+				}
+				else
+				{
+					//TODO: 
+				}
+			}
+		}
+	}
+
+	// 어빌리티 실행
+	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
+	{
+		AbilitySystemComponent->TryActivateAbility(AbilitySpecHandle);
+	}
+	
+	// Input Released
+	for (const FGameplayAbilitySpecHandle& SpecHandle : InputReleasedSpecHandles)
+	{
+		if (FGameplayAbilitySpec* AbilitySpec = AbilitySystemComponent->FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (AbilitySpec->Ability)
+			{
+				AbilitySpec->InputPressed = false;
+				if (AbilitySpec->IsActive())
+				{
+					//AbilitySpecInputReleased(*AbilitySpec);
+				}
+			}
+		}
+	}
+	
+	InputPressedSpecHandles.Reset();
+	InputReleasedSpecHandles.Reset();
 }
 

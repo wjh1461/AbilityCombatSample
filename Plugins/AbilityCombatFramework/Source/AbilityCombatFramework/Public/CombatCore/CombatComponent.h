@@ -4,12 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayAbilitySpec.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
+
+struct FGameplayTag;
 
 /**
  * 전투 시스템을 담당하는 핵심 컴포넌트
  * 기존 AbilitySystemComponent를 사용 중이면 호환 가능하게끔 구성.
+ * 허브 역할
+ * 
  * 
  * 어빌리티 태그 사용
  * (입력 - 태그) -> (태그 -> GA 실행)
@@ -25,6 +30,11 @@ class ABILITYCOMBATFRAMEWORK_API UCombatComponent : public UActorComponent, publ
 public:	
 	// Sets default values for this component's properties
 	UCombatComponent();
+	
+protected:
+	TArray<FGameplayAbilitySpecHandle> InputPressedSpecHandles;
+	TArray<FGameplayAbilitySpecHandle> InputReleasedSpecHandles;
+	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 	
 private:
 	UPROPERTY()
@@ -50,6 +60,9 @@ public:
 	// 전투 입력 의도 처리
 	virtual void HandleCombatIntent();
 	
-	// Ability 실행
-	bool TryCombatAbility(FGameplayTag CombatGameplayTag);
+	// 입력 처리 관련 메서드. 입력 태그에 매칭되는 어빌리티를 실행
+	void AbilityInputTagPressed(const FGameplayTag CombatInputTag);
+	void AbilityInputTagReleased(const FGameplayTag CombatInputTag);
+	// 입력 타이밍 처리 문제
+	void ProcessAbilityInput(const float DeltaTime, const bool bGamePaused);
 };
