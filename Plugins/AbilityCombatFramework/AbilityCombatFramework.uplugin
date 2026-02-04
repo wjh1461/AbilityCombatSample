@@ -34,6 +34,10 @@
 		{
 			"Name": "Mover",
 			"Enabled": true
+		},
+		{
+			"Name": "GameplayTagsEditor",
+			"Enabled": true
 		}
 	]
 }

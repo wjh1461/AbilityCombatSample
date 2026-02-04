@@ -9,6 +9,9 @@
 
 class UInputAction;
 
+/**
+ * 
+ */
 USTRUCT(BlueprintType)
 struct FCombatInputAction
 {

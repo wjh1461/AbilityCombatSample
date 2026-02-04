@@ -29,6 +29,7 @@ public class AbilityCombatFramework : ModuleRules
 				// ... add other public dependencies that you statically link with here ...
 				"GameplayAbilities",
 				"GameplayTags",
+				"Projects"
             }
 			);
 			

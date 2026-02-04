@@ -1,12 +1,19 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AbilityCombatFramework.h"
+#include "GameplayTagsManager.h"
+#include "Interfaces/IPluginManager.h"
 
 #define LOCTEXT_NAMESPACE "FAbilityCombatFrameworkModule"
 
 void FAbilityCombatFrameworkModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+	TSharedPtr<IPlugin> AbilityCombatPlugin = IPluginManager::Get().FindPlugin(TEXT("AbilityCombatFramework"));
+	if (AbilityCombatPlugin.IsValid())
+	{
+		FString PluginConfigDir = FPaths::Combine(AbilityCombatPlugin->GetBaseDir(), TEXT("Config"), TEXT("Tags"));
+		UGameplayTagsManager::Get().AddTagIniSearchPath(PluginConfigDir);
+	}
 }
 
 void FAbilityCombatFrameworkModule::ShutdownModule()

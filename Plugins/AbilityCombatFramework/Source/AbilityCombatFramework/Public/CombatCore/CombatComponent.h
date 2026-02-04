@@ -8,6 +8,8 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+class UCombatAbilitySet;
+class UCombatInputConfig;
 struct FGameplayTag;
 
 /**
@@ -32,6 +34,13 @@ public:
 	UCombatComponent();
 	
 protected:
+	//TODO: CombatAbilitySet, CombatInputConfig 둘을 하나로 묶기
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UCombatAbilitySet> CombatAbilitySet;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UCombatInputConfig> CombatInputConfig;
+	
+	
 	TArray<FGameplayAbilitySpecHandle> InputPressedSpecHandles;
 	TArray<FGameplayAbilitySpecHandle> InputReleasedSpecHandles;
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
