@@ -87,20 +87,31 @@ void UCombatComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	check(Subsystem);
-	
-	UEnhancedInputComponent* CombatIC = Cast<UEnhancedInputComponent>(PlayerInputComponent);
-	if (CombatIC)
+
+	if (CombatInputConfig)
 	{
-		//TODO: InputAction - InputGameplayTag 바인딩
-		//CombatIC->BindAction()
+		if (UEnhancedInputComponent* CombatIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+		{
+			//TODO: InputAction - InputGameplayTag 바인딩
+			//CombatIC->BindAction()
+			TArray<uint32> BindHandles;
+			BindCombatAbilityActions(CombatIC, CombatInputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, BindHandles);
+		}
 	}
 }
 
 void UCombatComponent::AbilityInputTagPressed(const FGameplayTag CombatInputTag)
 {
+	check(AbilitySystemComponent);
+	
 	if (CombatInputTag.IsValid() && AbilitySystemComponent)
 	{
 		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
+		if (ActivatableAbilities.IsEmpty())
+		{
+			return;
+		}
+		
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
 		{
 			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))
@@ -114,9 +125,16 @@ void UCombatComponent::AbilityInputTagPressed(const FGameplayTag CombatInputTag)
 
 void UCombatComponent::AbilityInputTagReleased(const FGameplayTag CombatInputTag)
 {
+	check(AbilitySystemComponent);
+	
 	if (CombatInputTag.IsValid())
 	{
 		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
+		if (ActivatableAbilities.IsEmpty())
+		{
+			return;
+		}
+		
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
 		{
 			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))
@@ -133,9 +151,6 @@ void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGa
 	//TODO: InputPressedSpecHandles, InputReleasedSpecHandles, InputHeldSpecHandles 처리
 	// 기존 플레이어 입력 시스템과 충돌하지 않아야 함.
 	// 입력이 Blocked 되었을 경우 처리
-	
-	
-	UE_LOG(LogCombat, Log, TEXT("ProcessAbilityInput Tick 처리"));
 	
 	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
 	AbilitiesToActivate.Reset();

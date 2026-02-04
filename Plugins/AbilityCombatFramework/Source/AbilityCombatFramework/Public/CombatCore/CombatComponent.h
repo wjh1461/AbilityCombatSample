@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "EnhancedInputComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "Components/ActorComponent.h"
+#include "CombatInput/CombatInputConfig.h"
 #include "CombatComponent.generated.h"
 
+class UInputMappingContext;
 class UCombatAbilitySet;
-class UCombatInputConfig;
 struct FGameplayTag;
 
 /**
@@ -39,7 +41,8 @@ protected:
 	TObjectPtr<UCombatAbilitySet> CombatAbilitySet;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCombatInputConfig> CombatInputConfig;
-	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TObjectPtr<UInputMappingContext>> DefaultInputMappings;
 	
 	TArray<FGameplayAbilitySpecHandle> InputPressedSpecHandles;
 	TArray<FGameplayAbilitySpecHandle> InputReleasedSpecHandles;
@@ -69,7 +72,6 @@ public:
 	// 전투 입력 의도 처리
 	virtual void HandleCombatIntent();
 	
-	
 	//---------------------- 입력 관련
 	//TODO: 이 부분은 서브시스템으로 분리할 수 있다면 분리
 	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
@@ -78,4 +80,33 @@ public:
 	void AbilityInputTagReleased(const FGameplayTag CombatInputTag);
 	// 입력 타이밍 처리 문제
 	void ProcessAbilityInput(const float DeltaTime, const bool bGamePaused);
+	// 입력 바인딩
+	template<class UserClass, typename PressedFuncType, typename ReleasedFuncType>
+	void BindCombatAbilityActions(UEnhancedInputComponent* InputComponent, const UCombatInputConfig* CombatInputConfig, UserClass* Object, PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
 };
+
+template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
+void UCombatComponent::BindCombatAbilityActions(UEnhancedInputComponent* InputComponent, const UCombatInputConfig* CombatInputConfig, UserClass* Object,
+	PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles)
+{
+	check(CombatInputConfig);
+	check(InputComponent);
+
+	for (const FCombatInputAction& Action : CombatInputConfig->CombatAbilityInputActions)
+	{
+		if (Action.InputAction && Action.InputTag.IsValid())
+		{
+			if (PressedFunc)
+			{
+				uint32 BindHandle = InputComponent->BindAction(Action.InputAction, ETriggerEvent::Triggered, Object, PressedFunc, Action.InputTag).GetHandle();
+				BindHandles.Add(BindHandle);
+			}
+
+			if (ReleasedFunc)
+			{
+				uint32 BindHandle = InputComponent->BindAction(Action.InputAction, ETriggerEvent::Completed, Object, ReleasedFunc, Action.InputTag).GetHandle();
+				BindHandles.Add(BindHandle);
+			}
+		}
+	}
+}
