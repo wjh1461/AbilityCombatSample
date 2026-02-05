@@ -6,6 +6,7 @@
 #include "CombatLog.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "CombatAbilities/CombatAbilitySet.h"
 #include "CombatAbilities/CombatGameplayAbilityBase.h"
 
 // Sets default values for this component's properties
@@ -13,6 +14,7 @@ UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	
+	bWantsInitializeComponent = true;
 }
 
 
@@ -23,6 +25,8 @@ void UCombatComponent::BeginPlay()
 	
 	const APlayerController* PlayerController = Cast<APlayerController>(GetOwner()->GetInstigatorController());
 	InitializePlayerInput(PlayerController->InputComponent);
+	
+	CombatAbilitySet->GiveCombatAbilitySystem(AbilitySystemComponent);
 }
 
 void UCombatComponent::InitializeComponent()
@@ -82,20 +86,20 @@ void UCombatComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	const APlayerController* PC = Cast<APlayerController>(GetOwner()->GetInstigatorController());
 	check(PC);
 	
-	const ULocalPlayer* LP = Cast<ULocalPlayer>(PC->GetLocalPlayer());
-	check(LP);
+	const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PC->GetLocalPlayer());
+	check(LocalPlayer);
 	
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	check(Subsystem);
 
 	if (CombatInputConfig)
 	{
-		if (UEnhancedInputComponent* CombatIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+		if (UEnhancedInputComponent* InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 		{
 			//TODO: InputAction - InputGameplayTag 바인딩
 			//CombatIC->BindAction()
 			TArray<uint32> BindHandles;
-			BindCombatAbilityActions(CombatIC, CombatInputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, BindHandles);
+			BindCombatAbilityActions(InputComponent, CombatInputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, BindHandles);
 		}
 	}
 }
@@ -107,11 +111,6 @@ void UCombatComponent::AbilityInputTagPressed(const FGameplayTag CombatInputTag)
 	if (CombatInputTag.IsValid() && AbilitySystemComponent)
 	{
 		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
-		if (ActivatableAbilities.IsEmpty())
-		{
-			return;
-		}
-		
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
 		{
 			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))
@@ -130,11 +129,6 @@ void UCombatComponent::AbilityInputTagReleased(const FGameplayTag CombatInputTag
 	if (CombatInputTag.IsValid())
 	{
 		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
-		if (ActivatableAbilities.IsEmpty())
-		{
-			return;
-		}
-		
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
 		{
 			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))

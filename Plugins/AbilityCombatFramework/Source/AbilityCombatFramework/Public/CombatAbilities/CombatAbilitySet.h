@@ -7,6 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "CombatAbilitySet.generated.h"
 
+class UAbilitySystemComponent;
 class UCombatGameplayAbilityBase;
 
 USTRUCT(BlueprintType)
@@ -31,6 +32,9 @@ UCLASS()
 class ABILITYCOMBATFRAMEWORK_API UCombatAbilitySet : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
+	
+public:
+	void GiveCombatAbilitySystem(UAbilitySystemComponent* ASC, UObject* SourceObject = nullptr) const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat Ability")
