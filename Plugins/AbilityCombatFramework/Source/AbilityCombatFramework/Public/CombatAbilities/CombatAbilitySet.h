@@ -26,6 +26,7 @@ struct FCombatAbilitySet_GameplayAbility
 };
 
 /**
+ * AbilitySystemComponent에 어빌리티 부여를 위한 데이터 세트
  * 
  */
 UCLASS()

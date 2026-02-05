@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "CombatAbilities/CombatAbilitySet.h"
 #include "CombatAbilities/CombatGameplayAbilityBase.h"
+#include "Subsystems/CombatEnhancedInputSubsystem.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -89,53 +90,20 @@ void UCombatComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PC->GetLocalPlayer());
 	check(LocalPlayer);
 	
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	UCombatEnhancedInputSubsystem* Subsystem = LocalPlayer->GetSubsystem<UCombatEnhancedInputSubsystem>();
 	check(Subsystem);
 
 	if (CombatInputConfig)
 	{
 		if (UEnhancedInputComponent* InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 		{
-			//TODO: InputAction - InputGameplayTag 바인딩
-			//CombatIC->BindAction()
 			TArray<uint32> BindHandles;
-			BindCombatAbilityActions(InputComponent, CombatInputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, BindHandles);
-		}
-	}
-}
-
-void UCombatComponent::AbilityInputTagPressed(const FGameplayTag CombatInputTag)
-{
-	check(AbilitySystemComponent);
-	
-	if (CombatInputTag.IsValid() && AbilitySystemComponent)
-	{
-		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
-		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
-		{
-			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))
-			{
-				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
-				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
-			}
-		}
-	}
-}
-
-void UCombatComponent::AbilityInputTagReleased(const FGameplayTag CombatInputTag)
-{
-	check(AbilitySystemComponent);
-	
-	if (CombatInputTag.IsValid())
-	{
-		TArray<FGameplayAbilitySpec>& ActivatableAbilities = AbilitySystemComponent->GetActivatableAbilities();
-		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
-		{
-			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(CombatInputTag))
-			{
-				InputReleasedSpecHandles.AddUnique(AbilitySpec.Handle);
-				InputHeldSpecHandles.Remove(AbilitySpec.Handle);
-			}
+			Subsystem->BindCombatAbilityActions(InputComponent, this, CombatInputConfig, 
+				Subsystem, &UCombatEnhancedInputSubsystem::AbilityInputTagPressed, &UCombatEnhancedInputSubsystem::AbilityInputTagReleased,
+				BindHandles);
+			Subsystem->BindCombatAbilityActions(InputComponent, this, CombatInputConfig, 
+				Subsystem, &UCombatEnhancedInputSubsystem::AbilityInputTagPressed, &UCombatEnhancedInputSubsystem::AbilityInputTagReleased, 
+				BindHandles);
 		}
 	}
 }

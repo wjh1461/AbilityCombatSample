@@ -25,7 +25,7 @@ struct FCombatInputAction
 };
 
 /**
- * 
+ * InputAction과 InputTag 바인딩을 위한 기본 설정 
  */
 UCLASS(BlueprintType)
 class ABILITYCOMBATFRAMEWORK_API UCombatInputConfig : public UDataAsset
