@@ -22,7 +22,7 @@ class ABILITYCOMBATFRAMEWORK_API UCombatEnhancedInputSubsystem : public UEnhance
 	GENERATED_BODY()
 	
 public:
-	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
+	void InitializePlayerInput(UCombatComponent* CombatComponent);
 	
 	void AbilityInputTagPressed(UCombatComponent* CombatComponent, const FGameplayTag CombatInputTag);
 	void AbilityInputTagReleased(UCombatComponent* CombatComponent, const FGameplayTag CombatInputTag);

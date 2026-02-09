@@ -6,8 +6,39 @@
 #include "GameplayAbilitySpec.h"
 #include "CombatCore/CombatComponent.h"
 
-void UCombatEnhancedInputSubsystem::InitializePlayerInput(UInputComponent* PlayerInputComponent)
+void UCombatEnhancedInputSubsystem::InitializePlayerInput(UCombatComponent* CombatComponent)
 {
+	check(CombatComponent);
+	
+	const APawn* Pawn = Cast<APawn>(CombatComponent->GetOwner());
+	if (!Pawn)
+	{
+		return;
+	}
+	
+	const APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
+	check(PC);
+	
+	const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PC->GetLocalPlayer());
+	check(LocalPlayer);
+	
+	UCombatEnhancedInputSubsystem* Subsystem = LocalPlayer->GetSubsystem<UCombatEnhancedInputSubsystem>();
+	check(Subsystem);
+
+	UCombatInputConfig* CombatInputConfig = CombatComponent->GetCombatInputConfig();
+	if (CombatInputConfig)
+	{
+		if (UEnhancedInputComponent* InputComponent = Cast<UEnhancedInputComponent>(CombatComponent->GetInputComponent()))
+		{
+			TArray<uint32> BindHandles;
+			BindCombatAbilityActions(InputComponent, CombatComponent, CombatInputConfig, 
+				this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased,
+				BindHandles);
+			BindCombatAbilityActions(InputComponent, CombatComponent, CombatInputConfig, 
+				this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, 
+				BindHandles);
+		}
+	}
 }
 
 void UCombatEnhancedInputSubsystem::AbilityInputTagPressed(UCombatComponent* CombatComponent, const FGameplayTag CombatInputTag)
