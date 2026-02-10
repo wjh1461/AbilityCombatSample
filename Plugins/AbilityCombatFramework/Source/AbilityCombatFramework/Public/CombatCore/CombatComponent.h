@@ -45,6 +45,7 @@ protected:
 	TObjectPtr<UCombatAbilitySet> CombatAbilitySet;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCombatInputConfig> CombatInputConfig;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TObjectPtr<UInputMappingContext>> DefaultInputMappings;
 	
@@ -66,6 +67,9 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	//~End
 	
+	UInputComponent* GetInputComponent() const;
+	UCombatInputConfig* GetCombatInputConfig() const;
+	
 	// 사용할 어빌리티들을 등록
 	void RegisterCombatAbilities();
 	
@@ -73,8 +77,6 @@ public:
 	virtual void HandleCombatIntent();
 	
 	//---------------------- 입력 관련
-	//TODO: 이 부분은 서브시스템으로 분리할 수 있다면 분리
-	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
-	// 입력 타이밍 처리 문제
+	//TODO: 입력 타이밍 처리 문제가 발생할 수 있음
 	void ProcessAbilityInput(const float DeltaTime, const bool bGamePaused);
 };

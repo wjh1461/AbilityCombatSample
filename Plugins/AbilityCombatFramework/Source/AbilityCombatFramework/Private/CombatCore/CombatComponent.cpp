@@ -4,8 +4,6 @@
 #include "CombatCore/CombatComponent.h"
 #include "AbilitySystemComponent.h"
 #include "CombatLog.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "CombatAbilities/CombatAbilitySet.h"
 #include "CombatAbilities/CombatGameplayAbilityBase.h"
 #include "Subsystems/CombatEnhancedInputSubsystem.h"
@@ -24,10 +22,13 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	const APlayerController* PlayerController = Cast<APlayerController>(GetOwner()->GetInstigatorController());
-	InitializePlayerInput(PlayerController->InputComponent);
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	const APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController());
+	const ULocalPlayer* LP = PlayerController->GetLocalPlayer();
+	UCombatEnhancedInputSubsystem* Subsystem = LP->GetSubsystem<UCombatEnhancedInputSubsystem>();
 	
-	CombatAbilitySet->GiveCombatAbilitySystem(AbilitySystemComponent);
+	Subsystem->InitializePlayerInput(this);
+	RegisterCombatAbilities();
 }
 
 void UCombatComponent::InitializeComponent()
@@ -64,48 +65,24 @@ UAbilitySystemComponent* UCombatComponent::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
+UInputComponent* UCombatComponent::GetInputComponent() const
+{
+	return GetOwner()->InputComponent;
+}
+
+UCombatInputConfig* UCombatComponent::GetCombatInputConfig() const
+{
+	return CombatInputConfig;
+}
+
 void UCombatComponent::RegisterCombatAbilities()
 {
-	//
+	CombatAbilitySet->GiveCombatAbilitySystem(AbilitySystemComponent);
 }
 
 void UCombatComponent::HandleCombatIntent()
 {
 	//TODO: 전투 입력 해석 후 어빌리티 실행 
-}
-
-void UCombatComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
-{
-	check(PlayerInputComponent);
-	
-	const APawn* Pawn = Cast<APawn>(GetOwner());
-	if (!Pawn)
-	{
-		return;
-	}
-	
-	const APlayerController* PC = Cast<APlayerController>(GetOwner()->GetInstigatorController());
-	check(PC);
-	
-	const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PC->GetLocalPlayer());
-	check(LocalPlayer);
-	
-	UCombatEnhancedInputSubsystem* Subsystem = LocalPlayer->GetSubsystem<UCombatEnhancedInputSubsystem>();
-	check(Subsystem);
-
-	if (CombatInputConfig)
-	{
-		if (UEnhancedInputComponent* InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-		{
-			TArray<uint32> BindHandles;
-			Subsystem->BindCombatAbilityActions(InputComponent, this, CombatInputConfig, 
-				Subsystem, &UCombatEnhancedInputSubsystem::AbilityInputTagPressed, &UCombatEnhancedInputSubsystem::AbilityInputTagReleased,
-				BindHandles);
-			Subsystem->BindCombatAbilityActions(InputComponent, this, CombatInputConfig, 
-				Subsystem, &UCombatEnhancedInputSubsystem::AbilityInputTagPressed, &UCombatEnhancedInputSubsystem::AbilityInputTagReleased, 
-				BindHandles);
-		}
-	}
 }
 
 void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGamePaused)
