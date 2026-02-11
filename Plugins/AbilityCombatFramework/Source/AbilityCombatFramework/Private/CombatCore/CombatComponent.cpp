@@ -4,6 +4,7 @@
 #include "CombatCore/CombatComponent.h"
 #include "AbilitySystemComponent.h"
 #include "CombatLog.h"
+#include "CombatAbilities/CombatAbilityProfile.h"
 #include "CombatAbilities/CombatAbilitySet.h"
 #include "CombatAbilities/CombatGameplayAbilityBase.h"
 #include "Subsystems/CombatEnhancedInputSubsystem.h"
@@ -72,11 +73,14 @@ UInputComponent* UCombatComponent::GetInputComponent() const
 
 UCombatInputConfig* UCombatComponent::GetCombatInputConfig() const
 {
-	return CombatInputConfig;
+	check(CombatAbilityProfile);
+	
+	return CombatAbilityProfile->CombatInputConfig;
 }
 
 void UCombatComponent::RegisterCombatAbilities()
 {
+	const UCombatAbilitySet* CombatAbilitySet = CombatAbilityProfile->CombatAbilitySet;
 	CombatAbilitySet->GiveCombatAbilitySystem(AbilitySystemComponent);
 }
 

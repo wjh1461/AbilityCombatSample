@@ -10,7 +10,7 @@
 class UInputAction;
 
 /**
- * 
+ * InputAction을 통해 InputTag를 전달하는 구조
  */
 USTRUCT(BlueprintType)
 struct FCombatInputAction

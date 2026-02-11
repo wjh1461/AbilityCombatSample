@@ -10,6 +10,7 @@
 #include "CombatInput/CombatInputConfig.h"
 #include "CombatComponent.generated.h"
 
+class UCombatAbilityProfile;
 class UInputMappingContext;
 class UCombatAbilitySet;
 struct FGameplayTag;
@@ -40,11 +41,8 @@ public:
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 	
 protected:
-	//TODO: CombatAbilitySet, CombatInputConfig 둘을 하나로 묶기
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UCombatAbilitySet> CombatAbilitySet;
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UCombatInputConfig> CombatInputConfig;
+	TObjectPtr<UCombatAbilityProfile> CombatAbilityProfile;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TObjectPtr<UInputMappingContext>> DefaultInputMappings;
