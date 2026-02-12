@@ -24,5 +24,19 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	APawn* GetMainTargetPawn() const;
+	
+	// 
+	void FocusMainTargetPawn();
+	// 
+	void FindMainTargetPawn();
+	void PerformTargeting();
+	
+private:
+	UPROPERTY()
+	TObjectPtr<APawn> MainTargetPawn;
+	UPROPERTY()
+	TObjectPtr<APawn> FocusingTagetPawn;
+	UPROPERTY()
+	TObjectPtr<APawn> PriorityTargetPawn;
 };

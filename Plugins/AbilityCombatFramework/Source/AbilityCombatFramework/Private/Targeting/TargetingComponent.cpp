@@ -6,11 +6,8 @@
 // Sets default values for this component's properties
 UTargetingComponent::UTargetingComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
 }
 
 
@@ -18,8 +15,6 @@ UTargetingComponent::UTargetingComponent()
 void UTargetingComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 	
 }
 
@@ -29,6 +24,25 @@ void UTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+}
+
+APawn* UTargetingComponent::GetMainTargetPawn() const
+{
+	return MainTargetPawn;
+}
+
+void UTargetingComponent::FocusMainTargetPawn()
+{
+	//TODO: 메인 타겟이 변경되지 않게 고정
+}
+
+void UTargetingComponent::FindMainTargetPawn()
+{
+	//TODO: 특정 범위 내에서 메인 타겟 찾기
+	
+	// 카메라가 바라보는 방향, 폰이 바라보는 방향
+	// 포함 시킬 범위
+	// 우선순위 문제
+
 }
 
