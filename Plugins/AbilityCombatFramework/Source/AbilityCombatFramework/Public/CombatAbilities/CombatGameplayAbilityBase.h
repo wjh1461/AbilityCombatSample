@@ -6,6 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "CombatGameplayAbilityBase.generated.h"
 
+class UCombatComponent;
+
 UENUM(BlueprintType)
 enum class ECombatAbilityActivationPolicy : uint8
 {
@@ -22,10 +24,15 @@ class ABILITYCOMBATFRAMEWORK_API UCombatGameplayAbilityBase : public UGameplayAb
 {
 	GENERATED_BODY()
 	
+	UCombatGameplayAbilityBase();
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|Ability Activation")
 	ECombatAbilityActivationPolicy ActivationPolicy;
 	
 public:
 	ECombatAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
+	
+	UFUNCTION(BlueprintCallable, Category="Combat|CombatAbility")
+	UCombatComponent* GetCombatComponent() const;
 };

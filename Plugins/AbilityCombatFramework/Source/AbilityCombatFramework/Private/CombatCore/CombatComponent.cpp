@@ -8,6 +8,7 @@
 #include "CombatAbilities/CombatAbilitySet.h"
 #include "CombatAbilities/CombatGameplayAbilityBase.h"
 #include "Subsystems/CombatEnhancedInputSubsystem.h"
+#include "Targeting/TargetingComponent.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -15,6 +16,8 @@ UCombatComponent::UCombatComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	
 	bWantsInitializeComponent = true;
+	
+	BackendTargetingClass = UTargetingComponent::StaticClass();
 }
 
 
@@ -36,11 +39,38 @@ void UCombatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	
+	// GAS 컴포넌트 세팅
 	AbilitySystemComponent = GetOwner()->FindComponentByClass<UAbilitySystemComponent>();
 	if (!AbilitySystemComponent)
 	{
 		UE_LOG(LogCombat, Warning, TEXT("액터에 AbilitySystemComponent 추가해야함."));
 	}
+
+	// 타겟팅 컴포넌트 생성
+	if (BackendTargetingClass)
+	{
+		BackendTargetingComponent = NewObject<UTargetingComponent>(this, BackendTargetingClass, TEXT("BackendTargetingComponent"));
+		if (BackendTargetingComponent)
+		{
+			BackendTargetingComponent->RegisterComponent();
+			BackendTargetingComponent->InitializeComponent();
+		}
+	}
+	else
+	{
+		UE_LOG(LogCombat, Error, TEXT("No backend class set on %s. Combat actor will not function."), *GetNameSafe(GetOwner()));
+	}
+}
+
+void UCombatComponent::UninitializeComponent()
+{
+	if (BackendTargetingComponent)
+	{
+		BackendTargetingComponent->DestroyComponent();
+	}
+	BackendTargetingComponent = nullptr;
+	
+	Super::UninitializeComponent();
 }
 
 
@@ -164,5 +194,10 @@ void UCombatComponent::ProcessAbilityInput(const float DeltaTime, const bool bGa
 	
 	InputPressedSpecHandles.Reset();
 	InputReleasedSpecHandles.Reset();
+}
+
+void UCombatComponent::FindCombatTargets()
+{
+	BackendTargetingComponent->PerformTargeting();
 }
 

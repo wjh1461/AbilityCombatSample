@@ -3,6 +3,8 @@
 
 #include "Targeting/TargetingComponent.h"
 
+#include "CombatLog.h"
+
 // Sets default values for this component's properties
 UTargetingComponent::UTargetingComponent()
 {
@@ -34,6 +36,8 @@ APawn* UTargetingComponent::GetMainTargetPawn() const
 void UTargetingComponent::FocusMainTargetPawn()
 {
 	//TODO: 메인 타겟이 변경되지 않게 고정
+	
+	UE_LOG(LogCombat, Log, TEXT("FocusMainTargetPawn"));
 }
 
 void UTargetingComponent::FindMainTargetPawn()
@@ -43,6 +47,12 @@ void UTargetingComponent::FindMainTargetPawn()
 	// 카메라가 바라보는 방향, 폰이 바라보는 방향
 	// 포함 시킬 범위
 	// 우선순위 문제
+	
+	UE_LOG(LogCombat, Log, TEXT("FindMainTargetPawn"));
+}
 
+void UTargetingComponent::PerformTargeting()
+{
+	UE_LOG(LogCombat, Log, TEXT("Combat 타겟 찾기"));
 }
 

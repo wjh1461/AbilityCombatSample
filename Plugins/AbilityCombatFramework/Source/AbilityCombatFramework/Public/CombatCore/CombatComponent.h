@@ -10,6 +10,7 @@
 #include "CombatInput/CombatInputConfig.h"
 #include "CombatComponent.generated.h"
 
+class UTargetingComponent;
 class UCombatAbilityProfile;
 class UInputMappingContext;
 class UCombatAbilitySet;
@@ -41,6 +42,9 @@ public:
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 	
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
+	TSubclassOf<UTargetingComponent> BackendTargetingClass;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCombatAbilityProfile> CombatAbilityProfile;
 	
@@ -51,12 +55,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	
+	UPROPERTY(Transient)
+	TObjectPtr<UTargetingComponent> BackendTargetingComponent;
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:
 	virtual void InitializeComponent() override;
+	virtual void UninitializeComponent() override;
 	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -77,4 +85,7 @@ public:
 	//---------------------- 입력 관련
 	//TODO: 입력 타이밍 처리 문제가 발생할 수 있음
 	void ProcessAbilityInput(const float DeltaTime, const bool bGamePaused);
+	
+	UFUNCTION(BlueprintCallable, Category="Combat")
+	void FindCombatTargets();
 };
